@@ -85,6 +85,19 @@ log:
     sh stop.sh
     ```
 
+3. 프로세스 체크
+
+    ```bash
+    sh check_process.sh
+    ```
+
+4. 프로세스 강제 종료
+
+    ```bash
+    sh kill_process.sh
+    ```
+
+
 ## 배포 가이드
 
 ### 1. python 패키지 내보내기
