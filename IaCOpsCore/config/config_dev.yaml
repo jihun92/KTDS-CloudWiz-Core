@@ -1,0 +1,10 @@
+mq_server:
+  host: "stg.ds-cmp.site"
+  port: 5672
+  username: "guest"
+  password: "guest"
+  req_queue_name: "TEST.REQ"
+  res_queue_name: "TEST.RES"
+
+log:
+  path: ./logs/daily_logs.log
