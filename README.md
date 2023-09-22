@@ -13,7 +13,7 @@
 
 환경 설정 파일은 YAML 형식을 사용하며, 다음과 같은 구조를 가집니다:
 
-```bash
+```
 mq_server:
   host: [RabbitMQ Server Host]
   port: [RabbitMQ Server Port]
@@ -26,65 +26,44 @@ log:
   path: [Log File Path]
 ```
 
-### 3. 파이썬 가상환경 설정 및 활성화
-1. 가상 환경을 생성하세요:
+### 3. Docker 환경 구성
 
-   ```
-   python3 -m venv venv
-   ```
+#### Docker 설치
 
-2. 가상 환경을 활성화하세요:
+도커가 설치되지 않은 경우 [도커 공식 문서](https://docs.docker.com/get-docker/)를 참조하여 설치하세요.
 
-   - **Linux/Mac**:
+#### Docker 이미지 빌드
 
-     ```
-     source venv/bin/activate
-     ```
+프로젝트 루트 디렉터리에서 다음 명령을 실행하여 Docker 이미지를 빌드합니다:
 
-   - **Windows**:
+```
+docker build -t iacops .
+```
 
-     ```
-     .\venv\Scripts\activate
-     ```
+### 4. Docker 컨테이너 실행
 
-### 4. python 패키지 설치
+빌드가 완료된 후, 다음 명령으로 Docker 컨테이너를 실행합니다:
 
-1. `requirements.txt` 파일에 있는 패키지를 설치하세요:
+```
+docker run iacops
+```
 
-   ```
-   pip install -r requirements.txt
-   ```
+### 5. 환경 선택 (Docker 컨테이너 내부)
 
-### 4. 환경 선택
-
-환경은 `APP_ENV` 환경 변수를 사용하여 선택됩니다. 다음과 같이 설정하세요:
+환경은 Docker 컨테이너의 `ENV` 지시문을 사용하여 설정됩니다. `Dockerfile`에 다음과 같이 추가하세요:
 
 - 개발환경:
 
-  ```bash
-  export APP_ENV=dev
+  ```
+  ENV APP_ENV=dev
   ```
 
 - 운영환경:
 
-  ```bash
-  export APP_ENV=prod
+  ```
+  ENV APP_ENV=prod
   ```
 
-### 5. 코어 서버 실행 및 중지
+### 6. 로깅
 
-1. 실행
-
-    ```bash
-    python src/main.py
-    ```
-
-## 배포 가이드
-
-### 1. python 패키지 내보내기
-
-1.  현재 환경의 패키지 목록을 `requirements.txt` 파일에 저장하려면 다음을 실행하세요:
-
-   ```
-   pip freeze > requirements.txt
-   ```
+- 로그 파일은 컨테이너 내부의 `/app/logs` 디렉터리에 저장됩니다.
