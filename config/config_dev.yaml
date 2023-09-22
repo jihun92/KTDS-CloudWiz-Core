@@ -7,4 +7,4 @@ mq_server:
   res_queue_name: "TEST.RES"
 
 log:
-  path: ./logs/daily_logs.log
+  path: ../logs/daily_logs.log
