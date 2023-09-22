@@ -5,9 +5,8 @@ from datetime import datetime
 from config.logger_setup import setup_logger
 from modules.rabbitmq_handler import RabbitMQHandler
 
-# 환경 변수로 환경 설정 (기본값은 'dev')
+# # 환경 변수로 환경 설정 (기본값은 'dev')
 config_dir = os.environ.get('CONFIG_DIR')
-
 env = os.environ.get('APP_ENV', 'dev')
 config_filename = os.path.join(config_dir, f"config_{env}.yaml")
 

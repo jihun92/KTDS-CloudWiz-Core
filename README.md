@@ -76,27 +76,8 @@ log:
 1. 실행
 
     ```bash
-    sh start.sh
+    python src/main.py
     ```
-
-2. 중지
-
-    ```bash
-    sh stop.sh
-    ```
-
-3. 프로세스 체크
-
-    ```bash
-    sh check_process.sh
-    ```
-
-4. 프로세스 강제 종료
-
-    ```bash
-    sh kill_process.sh
-    ```
-
 
 ## 배포 가이드
 
