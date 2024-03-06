@@ -1,5 +1,13 @@
 # Readme
 
+로컬 환경구성
+
+RabbitMQ 도커 환경구성
+
+docker run -d --name my-rabbit -p 5672:5672 -p 15672:15672 rabbitmq:management
+
+
+
 ## 개발자 환경구성 가이드
 
 ### 1. 환경 설정 파일 위치

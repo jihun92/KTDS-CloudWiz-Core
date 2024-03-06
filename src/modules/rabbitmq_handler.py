@@ -3,7 +3,6 @@ import pika
 import json
 
 from modules.ansible_handler import AnsibleHandler
-from modules.terraform_handler import TerraformHandler
 
 class RabbitMQHandler:
     def __init__(self, mq_config, logger):
@@ -23,8 +22,7 @@ class RabbitMQHandler:
         
     def init_handlers(self):
         self.handlers = {
-            'ansible': AnsibleHandler(),
-            'terraform': TerraformHandler(),
+            'ansible': AnsibleHandler(self.logger)
         }
         
     def queue_declare(self):
@@ -54,7 +52,7 @@ class RabbitMQHandler:
         self.logger.info(f"Sent '{message_body}' to {routing_key}")
         
     def handle_message(self, message_data):
-        target = "terraform" # ansible core 추가 개발 시 조건문 필요
+        target = "ansible" # ansible core 추가 개발 시 조건문 필요
         handler = self.handlers.get(target)
         if handler:
             result = handler.process(message_data)
@@ -64,13 +62,21 @@ class RabbitMQHandler:
         return result
         
     def process_message(self, ch, method, properties, body):
+
+        # 헤더 정보 출력
+        header_info = properties.headers
+        self.logger.info(f"Received Header info: {header_info}")
+
+        # 바디 정보 출력
         message = body.decode('utf-8')
-        self.logger.info(f"Received message: {message}")
-        
+        self.logger.info(f"Received body message: {message}")    
+
+        # 핸들러에게 메시지 전달
         message_data = json.loads(message)
         result = self.handle_message(message_data)
-        
-        self.publish_message(self.res_queue_name, result)
+
+        # 결과 메시지 전달
+        # self.publish_message(self.res_queue_name, message)
         
     def start(self):
         self.channel.basic_consume(

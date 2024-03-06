@@ -1,5 +1,5 @@
 mq_server:
-  host: "stg.ds-cmp.site"
+  host: "cloudwiz-mq"
   port: 5672
   username: "guest"
   password: "guest"
