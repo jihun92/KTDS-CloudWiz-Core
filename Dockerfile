@@ -25,20 +25,25 @@ ENV CONFIG_DIR=/app/config
 ENV APP_ENV=dev
 
 # SSH 키 복사
-COPY /keys/id_rsa /root/.ssh/id_rsa
-COPY /keys/id_rsa.pub /root/.ssh/id_rsa.pub
+# COPY /keys/id_rsa /root/.ssh/id_rsa
+# COPY /keys/id_rsa.pub /root/.ssh/id_rsa.pub
+# COPY /keys/id_rsa.pub /etc/ssh/ssh_host_rsa_key.pub
 
 # requirements.txt에 있는 Python 의존성을 설치합니다.
 RUN pip install --upgrade pip && \
     pip install --no-cache-dir -r requirements.txt
 
 # 두 번째 SSH 포트 열기
-EXPOSE 22222
+EXPOSE 22
 
 # src/main.py를 실행합니다.
-CMD ["python3", "src/main.py"]
+# CMD ["python3", "src/main.py"]
 
+COPY start_ssh_service.sh /usr/local/bin/
+RUN chmod +x /usr/local/bin/start_ssh_service.sh
 
+# CMD를 사용하여 파이썬 코드 실행 및 SSH 서비스 시작 스크립트를 백그라운드에서 실행
+CMD ["sh", "-c", "start_ssh_service.sh & python src/main.py"]
 
 
 # 이미지 빌드
@@ -50,7 +55,7 @@ CMD ["python3", "src/main.py"]
 # 컨테이너 실행
 # docker run -d --name cloudwiz-mq -p 5672:5672 -p 15672:15672 --network cloudwiz-network rabbitmq
 ## docker run -d --name ansible-core-container -v /Users/kimjihun/Documents/git/KTDS-IaCOpsCore:/app --network cloudwiz-network ansible-core-image
-# docker run -d --name ansible-core-container -p 22222:22222 -v /Users/kimjihun/Documents/git/KTDS-IaCOpsCore:/app --network cloudwiz-network ansible-core-image
+# docker run -d --name ansible-core-container -p 22:22 -v /Users/kimjihun/Documents/git/KTDS-IaCOpsCore:/app --network cloudwiz-network ansible-core-image
 
  
 # docker exec -it cloudwiz-mq /bin/bash
@@ -59,20 +64,10 @@ CMD ["python3", "src/main.py"]
 # rabbitmqctl list_queues name_of_your_queue
 
 
-# ps aux | grep sshd
-# /etc/init.d/ssh start
 
 
-# docker exec -it ansible-core-container /bin/bash
-# root@b55a1ffd3561:/app# ansible --version
-# ansible [core 2.16.4]
-#   config file = None
-#   configured module search path = ['/root/.ansible/plugins/modules', '/usr/share/ansible/plugins/modules']
-#   ansible python module location = /usr/local/lib/python3.10/site-packages/ansible
-#   ansible collection location = /root/.ansible/collections:/usr/share/ansible/collections
-#   executable location = /usr/local/bin/ansible
-#   python version = 3.10.13 (main, Feb 13 2024, 09:39:14) [GCC 12.2.0] (/usr/local/bin/python)
-#   jinja version = 3.1.3
-#   libyaml = True
+## 도커 허브
+# docker build -t jihun92/cloudwiz-ansible-core:test .
+
 
 

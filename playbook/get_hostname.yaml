@@ -1,6 +1,6 @@
 ---
 - name: Get host name
-  hosts: all
+  hosts: localhost
   tasks:
     - name: Retrieve host name
       debug:
