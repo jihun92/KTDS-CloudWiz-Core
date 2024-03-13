@@ -68,6 +68,7 @@ CMD ["sh", "-c", "start_ssh_service.sh & python src/main.py"]
 
 ## 도커 허브
 # docker build -t jihun92/cloudwiz-ansible-core:test .
+# docker push jihun92/cloudwiz-ansible-core:test
 
-
+# docker pull jihun92/cloudwiz-ansible-core
 
