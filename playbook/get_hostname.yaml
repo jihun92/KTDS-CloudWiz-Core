@@ -5,3 +5,5 @@
     - name: Retrieve host name
       debug:
         msg: "Host name is {{ ansible_hostname }}"
+    - name: shell
+      shell: id

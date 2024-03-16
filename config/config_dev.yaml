@@ -3,8 +3,7 @@ mq_server:
   port: 5672
   username: "guest"
   password: "guest"
-  req_queue_name: "TEST.REQ"
-  res_queue_name: "TEST.RES"
+  req_queue_name: "req_queue"
 
 log:
   path: /app/logs/daily_logs.log
