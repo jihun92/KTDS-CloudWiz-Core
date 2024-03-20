@@ -22,7 +22,7 @@ COPY . /app
 # 환경 변수를 설정합니다.
 ENV PROJECT_ROOT=/app
 ENV CONFIG_DIR=/app/config
-ENV APP_ENV=local
+ENV APP_ENV=dev
 
 # SSH 키 복사
 # COPY /keys/id_rsa /root/.ssh/id_rsa
