@@ -3,26 +3,5 @@
   hosts: all
   gather_facts: no
   tasks:
-    - name: Pause for 0.1 seconds
-      pause:
-        seconds: 0.1
-
-    - name: Debug message - HI
-      debug:
-        msg: "HI"
-
-    - name: Pause for 0.1 seconds
-      pause:
-        seconds: 0.1
-
-    - name: Debug variable - var1
-      debug:
-        var: "var1"
-
-    - name: Pause for 0.1 seconds
-      pause:
-        seconds: 0.1
-
-    - name: Debug variable - ex_var1
-      debug:
-        var: "ex_var1"
+    - name: get hostname
+      shell: hostname
