@@ -24,9 +24,6 @@ ENV PROJECT_ROOT=/app
 ENV CONFIG_DIR=/app/config
 ENV APP_ENV=local
 
-# /app/logs 디렉토리를 만듭니다.
-RUN mkdir /app/logs
-
 # SSH 키 복사
 # COPY /keys/id_rsa /root/.ssh/id_rsa
 # COPY /keys/id_rsa.pub /root/.ssh/id_rsa.pub
