@@ -39,6 +39,7 @@ EXPOSE 22
 # src/main.py를 실행합니다.
 # CMD ["python3", "src/main.py"]
 
+COPY ktds-dev-cmp-key.pem /app/ktds-dev-cmp-key.pem
 COPY start_ssh_service.sh /usr/local/bin/
 RUN chmod +x /usr/local/bin/start_ssh_service.sh
 
