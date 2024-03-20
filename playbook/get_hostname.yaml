@@ -1,9 +1,28 @@
 ---
-- name: Get host name
-  hosts: localhost
+- name: Ansible Play
+  hosts: all
+  gather_facts: no
   tasks:
-    - name: Retrieve host name
+    - name: Pause for 0.1 seconds
+      pause:
+        seconds: 0.1
+
+    - name: Debug message - HI
       debug:
-        msg: "Host name is {{ ansible_hostname }}"
-    - name: shell
-      shell: id
+        msg: "HI"
+
+    - name: Pause for 0.1 seconds
+      pause:
+        seconds: 0.1
+
+    - name: Debug variable - var1
+      debug:
+        var: "var1"
+
+    - name: Pause for 0.1 seconds
+      pause:
+        seconds: 0.1
+
+    - name: Debug variable - ex_var1
+      debug:
+        var: "ex_var1"

@@ -27,7 +27,7 @@ class AnsibleHandler:
         self.logger = Logger()
         self.rabbit_mq_handler = rabbit_mq_handler
 
-    def run_playbook(self, playbook_path, host_list, host_vars, extra_vars, tags, verbosity, credentials, limit):
+    def run_playbook(self, playbook_path, host_list, host_vars, extra_vars, tags, verbosity, credentials):
 
          # since the API is constructed for CLI it expects certain options to always be set in the context object
         context.CLIARGS = ImmutableDict(connection='smart', module_path="", forks=10, become=False,
@@ -49,9 +49,86 @@ class AnsibleHandler:
         # create inventory, use path to host config file as source or hosts in a comma separated string
         inventory = InventoryManager(loader=loader, sources=sources)
 
-        # variable manager takes care of merging all the different sources to give you a unified view of variables available in each context
+        # VariableManager 정의
         variable_manager = VariableManager(loader=loader, inventory=inventory)
 
+        # 전역 호스트 변수 처리
+        if extra_vars:
+            variable_manager._extra_vars.update(extra_vars)
+            self.logger.info(f"extra_vars : {variable_manager.extra_vars} ")
+
+        # 호스트 변수 처리
+        if host_vars:
+            self.logger.info(f"host_vars: {host_vars}")
+            for host_name in host_vars:
+                host_vars = host_vars[host_name]
+                for key, value in host_vars.items():
+                    variable_manager.set_host_variable(host_name, key, value)
+
+        pbex = PlaybookExecutor(
+            playbooks=[playbook_path],
+            inventory=inventory,
+            variable_manager=variable_manager,
+            loader=loader,
+            passwords={}
+        )
+
+        # 콜백 클래스를 사용하여 출력을 받음
+        results_callback = ResultsCollectorJSONCallback(self, self.rabbit_mq_handler)
+        pbex._tqm._stdout_callback = results_callback
+
+        try:
+            result = pbex.run()
+            self.logger.info(f"playbook Run !! : {result}")
+        except AnsibleError:
+            pbex._tqm.cleanup()
+            self.loader.cleanup_all_tmp_files() 
+            self.logger.error(f"[Error] except AnsibleError :{result}")
+
+
+        # Remove ansible tmpdir
+        shutil.rmtree(C.DEFAULT_LOCAL_TMP, True)
+
+        return results_callback.get_summary()
+    
+    # 삭제 예정
+    def run_playbook_v0(self, playbook_path, host_list, host_vars, extra_vars, tags, verbosity, credentials):
+
+         # since the API is constructed for CLI it expects certain options to always be set in the context object
+        context.CLIARGS = ImmutableDict(connection='smart', module_path="", forks=10, become=False,
+                                    become_method='sudo', become_user='root', check=False, diff=False,
+                                    verbosity=verbosity, syntax=False, start_at_task=None)
+        
+        # required for
+        # https://github.com/ansible/ansible/blob/devel/lib/ansible/inventory/manager.py#L204
+        sources = ','.join(host_list)
+        if len(host_list) == 1:
+            sources += ','
+
+        # initialize needed objects
+        loader = DataLoader()  # Takes care of finding and reading yaml, json and ini files
+
+        # Instantiate our ResultsCollectorJSONCallback for handling results as they come in. Ansible expects this to be one of its main display outlets
+        results_callback = ResultsCollectorJSONCallback(self, self.rabbit_mq_handler)
+
+        # create inventory, use path to host config file as source or hosts in a comma separated string
+        inventory = InventoryManager(loader=loader, sources=sources)
+
+        # VariableManager 정의
+        variable_manager = VariableManager(loader=loader, inventory=inventory)
+
+        # 전역 호스트 변수 처리
+        if extra_vars:
+            variable_manager._extra_vars.update(extra_vars)
+            self.logger.info(f"extra_vars : {variable_manager.extra_vars} ")
+
+        # 호스트 변수 처리
+        if host_vars:
+            self.logger.info(f"host_vars: {host_vars}")
+            for host_name in host_vars:
+                host_vars = host_vars[host_name]
+                for key, value in host_vars.items():
+                    variable_manager.set_host_variable(host_name, key, value)
 
         # ## var1
 
@@ -69,11 +146,11 @@ class AnsibleHandler:
             gather_facts='no',
             tasks=[
                 dict(action=dict(module='pause', args=dict(seconds=0.1))),
-                dict(action=dict(module='debug', args=dict(msg='HI 1'))),
+                dict(action=dict(module='debug', args=dict(msg='HI'))),
                 dict(action=dict(module='pause', args=dict(seconds=0.1))),
-                dict(action=dict(module='debug', args=dict(msg='HI 2'))),
+                dict(action=dict(module='debug', args=dict(var='var1'))),
                 dict(action=dict(module='pause', args=dict(seconds=0.1))),
-                dict(action=dict(module='debug', args=dict(msg='HI 3'))),
+                dict(action=dict(module='debug', args=dict(var='ex_var1'))),
             ]
         )
 
@@ -95,34 +172,6 @@ class AnsibleHandler:
         # Remove ansible tmpdir
         shutil.rmtree(C.DEFAULT_LOCAL_TMP, True)
 
-
-
-        ## var2 
-
-        # pbex = PlaybookExecutor(
-        #     playbooks=[playbook_path],
-        #     inventory=inventory,
-        #     variable_manager=variable_manager,
-        #     loader=loader,
-        #     passwords={}
-        # )
-
-        # # 콜백 클래스를 사용하여 출력을 받음
-        # results_callback = ResultsCollectorJSONCallback()
-        # pbex._tqm._stdout_callback = results_callback
-
-        # try:
-        #     result = pbex.run()
-        #     self.logger.info(f"playbook Run !! : {result}")
-        # except AnsibleError:
-        #     pbex._tqm.cleanup()
-        #     self.loader.cleanup_all_tmp_files() 
-        #     self.logger.error(f"[Error] except AnsibleError :{result}")
-
-
-        # # Remove ansible tmpdir
-        # shutil.rmtree(C.DEFAULT_LOCAL_TMP, True)
-
         return results_callback.get_summary()
 
     
@@ -138,13 +187,12 @@ class AnsibleHandler:
         tags = body_dict.get("tags", [])
         verbosity = body_dict.get("verbosity", 1)
         credentials = body_dict.get("credentials")
-        limit = body_dict.get("limit", 0)
 
         tmp_header_dict = header_dict
         tmp_header_dict["playbook_name"] = body_dict.get("playbook_path")
         self.send_start_msg(tmp_header_dict)
         
-        summary = self.run_playbook(playbook_path, inventory, host_vars, extra_vars, tags, verbosity, credentials, limit)
+        summary = self.run_playbook(playbook_path, inventory, host_vars, extra_vars, tags, verbosity, credentials)
 
         tmp_header_dict = header_dict
         tmp_body_dict = {}
