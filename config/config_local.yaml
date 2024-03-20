@@ -1,8 +1,8 @@
 mq_server:
-  host: dev.cloudwiz.ktds.com
+  host: "cloudwiz-mq"
   port: 5672
   username: "guest"
-  password: "Guest123!@#"
+  password: "guest"
   req_queue_name: "req_queue"
 
 log:

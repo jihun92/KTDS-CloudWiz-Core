@@ -22,7 +22,10 @@ COPY . /app
 # 환경 변수를 설정합니다.
 ENV PROJECT_ROOT=/app
 ENV CONFIG_DIR=/app/config
-ENV APP_ENV=dev
+ENV APP_ENV=local
+
+# /app/logs 디렉토리를 만듭니다.
+RUN mkdir /app/logs
 
 # SSH 키 복사
 # COPY /keys/id_rsa /root/.ssh/id_rsa
@@ -70,5 +73,6 @@ CMD ["sh", "-c", "start_ssh_service.sh & python src/main.py"]
 # docker build -t jihun92/cloudwiz-ansible-core:test .
 # docker push jihun92/cloudwiz-ansible-core:test
 
-# docker pull jihun92/cloudwiz-ansible-core
-
+# docker pull jihun92/cloudwiz-ansible-core:test
+# sudo docker run -d jihun92/cloudwiz-ansible-core:test
+# docker run -d --name ansible-core-container -v /home/ubuntu/KTDS-CloudWiz-Core:/app ansible-core-image

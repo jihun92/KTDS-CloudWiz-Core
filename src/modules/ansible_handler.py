@@ -32,7 +32,8 @@ class AnsibleHandler:
          # since the API is constructed for CLI it expects certain options to always be set in the context object
         context.CLIARGS = ImmutableDict(connection='smart', module_path="", forks=10, become=False,
                                     become_method='sudo', become_user='root', check=False, diff=False,
-                                    verbosity=verbosity, syntax=False, start_at_task=None)
+                                    verbosity=verbosity, credentials=credentials['ssh_key'], user=credentials['username'],
+                                    syntax=False, start_at_task=None)
         
         # required for
         # https://github.com/ansible/ansible/blob/devel/lib/ansible/inventory/manager.py#L204
