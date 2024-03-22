@@ -3,7 +3,7 @@ mq_server:
   port: 5672
   username: "guest"
   password: "guest"
-  req_queue_name: "req_queue"
+  req_queue_name: "ANSIBLE.APPLY.REQUEST"
 
 log:
   path: /app/logs/daily_logs.log
