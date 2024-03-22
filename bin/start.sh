@@ -7,4 +7,4 @@ export APP_ENV=dev
 
 mkdir -p /app/logs
 
-nohup python /app/src/main.py &
+nohup python3 /app/src/main.py &
