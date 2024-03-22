@@ -9,5 +9,5 @@ export APP_ENV=dev
 service ssh start
 
 # requirements.txt에 있는 Python 의존성 설치
-pip install --upgrade pip
-pip install --no-cache-dir -r requirements.txt
+pip3 install --upgrade pip
+pip3 install --no-cache-dir -r requirements.txt
