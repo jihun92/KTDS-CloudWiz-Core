@@ -1,0 +1,70 @@
+---
+# 사전 점검 (Pre-check)
+- name: Pre-check before Nginx installation
+  hosts: your_servers
+  become: yes
+  vars:
+    supported_ubuntu_major_version: "22"
+
+  tasks:
+    # 호스트의 운영 체제 정보 수집
+    - name: Gather facts
+      setup:
+
+    # 지원하는 우분투 버전인지 확인
+    - name: Check if Ubuntu version is supported
+      fail:
+        msg: "This playbook is only supported on Ubuntu {{ supported_ubuntu_major_version }}.*"
+      when: ansible_distribution == 'Ubuntu' and ansible_distribution_major_version != supported_ubuntu_major_version
+
+    # 이미 Nginx가 설치되어 있는지 확인
+    - name: Check if Nginx is already installed
+      command: nginx -v
+      register: nginx_version
+      ignore_errors: yes
+      changed_when: false
+
+    # 사전 점검에 성공한 호스트 그룹을 정의
+    - name: Define group for hosts that passed pre-check
+      add_host:
+        name: "{{ inventory_hostname }}"
+        groups: pre_check_passed
+      when: ansible_distribution == 'Ubuntu' and ansible_distribution_major_version == supported_ubuntu_major_version and nginx_version.rc == 0
+
+# 설치 (Installation)
+- name: Install and configure Nginx on Ubuntu 22.x
+  hosts: pre_check_passed
+  become: yes
+
+  tasks:
+    # Nginx 설치
+    - name: Install Nginx
+      package:
+        name: nginx
+        state: present
+
+    # Nginx 서비스 실행 및 활성화
+    - name: Ensure Nginx is running and enabled
+      service:
+        name: nginx
+        state: started
+        enabled: yes
+
+# 사후 점검 (Post-check)
+- name: Post-check after Nginx installation
+  hosts: your_servers
+  gather_facts: no
+
+  tasks:
+    # 사후 점검을 위한 호스트 그룹 정의
+    - name: Define group for hosts that need post-check
+      add_host:
+        name: "{{ inventory_hostname }}"
+        groups: post_check_needed
+      when: ansible_distribution == 'Ubuntu' and ansible_distribution_major_version == supported_ubuntu_major_version and nginx_version.rc == 0
+
+    # 사후 점검에 필요한 호스트 그룹에 속한 경우에만 사후 점검 실행
+    - name: Perform post-check
+      debug:
+        msg: "Performing post-check on {{ inventory_hostname }}"
+      when: inventory_hostname in groups['post_check_needed']
