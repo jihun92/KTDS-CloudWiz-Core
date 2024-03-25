@@ -1,42 +1,18 @@
 ---
-- become: yes
+- name: 사전 점검 - 우분투 버전 확인
   hosts: all
-  gather_facts: no
-  vars:
-    INSTALL_DIR: /nginx
-    LOG_DIR: /nx_log
+  become: yes
   tasks:
-    - name: check if the directories are mounted
-      shell:  |
-              df -h | grep {{INSTALL_DIR|trim}} | wc -l
-              df -h | grep {{LOG_DIR|trim}} | wc -l
-      register: dir_exists
-    # - name: fail
-    #   fail:
-    #     msg: "[ NOK ] Fail check mount. {{INSTALL_DIR}} && {{LOG_DIR}} NOT mounted !"
-    #   when:
-    #   - dir_exists.stdout_lines[0] == "0" or dir_exists.stdout_lines[1] == "0"
-    - name: debug
-      debug:
-        msg: "[ OK ] Success check mount. {{INSTALL_DIR}} && {{ LOG_DIR }}"
-    - name: check process
-      shell: ps -ef | grep nginx | grep master | awk '{print $9}'
-      register: start_info
-    - name: Confirm the master process
-      debug:
-        msg: "Sucess"
-      when:
-      - start_info.stdout_lines[0] is undefined or start_info.stdout_lines[0] != "master"
-    - name: alter
-      meta: end_play
-      when:
-      - start_info.stdout_lines[0] == "master"
-    - name: check if directory exists_load
-      stat:
-        path: "/nginx/nginx116"
-      register: p
-    - name: check if directory exists_compare
-      fail:
-        msg: "nginx service folder is be. You should check this folder(/nginx/nginx116). if you want move on, must remove it."
-      when:
-      - p.stat.isdir is defined and p.stat.isdir
+    - name: 우분투 버전 확인
+      block:
+        - name: 우분투 버전 확인
+          command: lsb_release -rs
+          register: ubuntu_version
+
+        - name: 우분투 버전이 22.x가 아닌 경우 실패
+          fail:
+            msg: "이 플레이북은 우분투 22.x를 대상으로 합니다. 현재 버전은 {{ ubuntu_version.stdout }} 입니다."
+          when: ubuntu_version.stdout.find("22.") != 0
+      rescue:
+        - name: 사전 점검에서 실패한 경우 플레이북 종료
+          meta: end_play
