@@ -128,15 +128,18 @@ class ResultsCollectorJSONCallback(CallbackBase):
         is_changed = result.is_changed()
         self.task_order += 1
 
-        header_dict = self.ansible_handler.get_received_msg_header_dict()
-        body_dict = self.ansible_handler.get_received_msg_body_dict()
-
+        header_dict = {}
+        header_dict["message_id"] = str(uuid.uuid4())
         header_dict["message_type"] = "TASK_RESULT"
-        header_dict["playbook_name"] = body_dict.get("playbook_path")
+        header_dict["req_queue"] = self.ansible_handler.get_request_msg_header_req_queue()
+        header_dict["res_queue"] = self.ansible_handler.get_request_msg_header_res_queue()
+        header_dict["source_system"] = self.ansible_handler.get_request_msg_header_source_system()
+        header_dict["timestamp"] = self.ansible_handler.get_request_msg_header_timestamp()
+        header_dict["playbook_name"] = self.ansible_handler.get_request_msg_body_playbook_path()
 
         # Init Message payload
         body_dict = dict()
-        body_dict["parent_id"] = str(uuid.uuid4())
+        body_dict["parent_id"] = self.ansible_handler.get_request_msg_header_message_id()
         body_dict["work_name"] = socket.gethostname()
         body_dict["start_time"] = self.tastk_start_time
         body_dict["end_time"] = current_time_utc.strftime('%Y-%m-%dT%H:%M:%SZ')
@@ -150,6 +153,7 @@ class ResultsCollectorJSONCallback(CallbackBase):
  
         body_dict = json.dumps(body_dict, indent=4)
         self.logger.info(f" Task Result : {body_dict}")
+
 
         self.rabbit_mq_handler.publish_message(
             routing_key=header_dict["res_queue"], 

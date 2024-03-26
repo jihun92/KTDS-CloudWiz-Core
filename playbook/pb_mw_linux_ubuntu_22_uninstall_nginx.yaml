@@ -1,0 +1,36 @@
+- name: Uninstall Nginx
+  hosts: all
+  become: true
+  gather_facts: no
+
+  vars:
+    nginx_instance_name: "nginx"  # 엔진엑스 인스턴스명 변수
+
+  tasks:
+    - name: Stop Nginx service
+      service:
+        name: nginx
+        state: stopped
+
+    - name: Remove Nginx package
+      apt:
+        name: nginx
+        state: absent
+
+    - name: Remove Nginx configuration files
+      file:
+        path: "{{ item }}"
+        state: absent
+      with_items:
+        - /etc/nginx
+        - /etc/systemd/system/nginx.service
+
+    - name: Remove Nginx log directory
+      file:
+        path: /var/log/nginx
+        state: absent
+
+    - name: Remove Nginx cache directory
+      file:
+        path: /var/cache/nginx
+        state: absent

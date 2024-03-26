@@ -178,8 +178,8 @@ class AnsibleHandler:
     
     def process(self, header_dict, body_dict):
 
-        self.received_msg_header_dict = header_dict
-        self.received_msg_body_dict = body_dict
+        self.request_msg_header_dict = header_dict
+        self.request_msg_body_dict = body_dict
         
         playbook_path = body_dict.get("playbook_path")
         inventory = body_dict.get("inventory")
@@ -189,37 +189,66 @@ class AnsibleHandler:
         verbosity = body_dict.get("verbosity", 1)
         credentials = body_dict.get("credentials")
 
-        tmp_header_dict = header_dict
-        tmp_header_dict["playbook_name"] = body_dict.get("playbook_path")
-        self.send_start_msg(tmp_header_dict)
+        self.send_start_msg()
         
         summary = self.run_playbook(playbook_path, inventory, host_vars, extra_vars, tags, verbosity, credentials)
 
-        tmp_header_dict = header_dict
-        tmp_body_dict = {}
-        tmp_header_dict["playbook_name"] = body_dict.get("playbook_path")
-        tmp_body_dict["summary"] = summary
-        self.send_end_msg(tmp_header_dict, tmp_body_dict, summary)
+        self.send_end_msg(summary)
 
         return "AnsibleHandler"
-
-    def get_received_msg_header_dict(self):
-        return self.received_msg_header_dict
     
-    def get_received_msg_body_dict(self):
-        return self.received_msg_body_dict
+    def get_request_msg_header_dict(self):
+        return self.request_msg_header_dict
+        
+    def get_request_msg_header_message_id(self):
+        header = self.get_request_msg_header_dict()
+        return header.get("message_id")
+    
+    def get_request_msg_header_message_type(self):
+        header = self.get_request_msg_header_dict()
+        return header.get("message_type")
 
-    def send_start_msg(self, header_dict):
+    def get_request_msg_header_req_queue(self):
+        header = self.get_request_msg_header_dict()
+        return header.get("req_queue")
+    
+    def get_request_msg_header_res_queue(self):
+        header = self.get_request_msg_header_dict()
+        return header.get("res_queue")
+    
+    def get_request_msg_header_source_system(self):
+        header = self.get_request_msg_header_dict()
+        return header.get("source_system")
+    
+    def get_request_msg_header_timestamp(self):
+        header = self.get_request_msg_header_dict()
+        return header.get("timestamp")
+    
+    def get_request_msg_body_dict(self):
+        return self.request_msg_body_dict
+
+    def get_request_msg_body_playbook_path(self):
+        body = self.get_request_msg_body_dict()
+        return body.get("playbook_path")
+
+    
+    def send_start_msg(self):
 
         current_time_utc = datetime.utcnow()
 
+        header_dict = {}
+        header_dict["message_id"] = str(uuid.uuid4())
         header_dict["message_type"] = "EXEC_RESP"
+        header_dict["req_queue"] = self.get_request_msg_header_req_queue()
+        header_dict["res_queue"] = self.get_request_msg_header_res_queue()
+        header_dict["source_system"] = self.get_request_msg_header_source_system()
+        header_dict["timestamp"] = self.get_request_msg_header_timestamp()
+        header_dict["playbook_name"] = self.get_request_msg_body_playbook_path()
 
         body_dict = {}
-        body_dict["parent_id"] = str(uuid.uuid4())
+        body_dict["parent_id"] = self.get_request_msg_header_message_id()
         body_dict["work_name"] = socket.gethostname()
         body_dict["start_time"] = current_time_utc.strftime('%Y-%m-%dT%H:%M:%SZ')
-        # body_dict["status"] = "in_progress"
         
         self.rabbit_mq_handler.publish_message(
             routing_key=header_dict["res_queue"], 
@@ -228,14 +257,21 @@ class AnsibleHandler:
         
         # self.logger.info(f"Send start Msg to {header_dict['res_queue']}, header : {header_dict}. body {body_dict}")
 
-    def send_end_msg(self, header_dict, body_dict, summary):
+    def send_end_msg(self, summary):
 
         current_time_utc = datetime.utcnow()
 
+        header_dict = {}
+        header_dict["message_id"] = str(uuid.uuid4())
         header_dict["message_type"] = "PLAYBOOK_RESULT"
+        header_dict["req_queue"] = self.get_request_msg_header_req_queue()
+        header_dict["res_queue"] = self.get_request_msg_header_res_queue()
+        header_dict["source_system"] = self.get_request_msg_header_source_system()
+        header_dict["timestamp"] = self.get_request_msg_header_timestamp()
+        header_dict["playbook_name"] = self.get_request_msg_body_playbook_path()
 
         body_dict = {}
-        body_dict["parent_id"] = str(uuid.uuid4())
+        body_dict["parent_id"] = self.get_request_msg_header_message_id()
         body_dict["work_name"] = socket.gethostname()
         body_dict["end_time"] = current_time_utc.strftime('%Y-%m-%dT%H:%M:%SZ')
         body_dict["summary"] = summary

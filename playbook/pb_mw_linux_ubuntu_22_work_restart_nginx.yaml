@@ -1,0 +1,26 @@
+- name: Restart Nginx and Verify Status
+  hosts: all
+  become: true
+  gather_facts: no
+  
+  tasks:
+    - name: Restart Nginx
+      service:
+        name: nginx
+        state: restarted
+
+    - name: Wait for Nginx to restart
+      become: false
+      wait_for:
+        port: 80
+        delay: 10
+        timeout: 60
+
+    - name: Check if Nginx service is running
+      shell: systemctl is-active nginx
+      register: nginx_service_status
+      changed_when: false
+
+    - name: Print Nginx service status
+      debug:
+        msg: "Nginx service is {{ 'running' if nginx_service_status.stdout == 'active' else 'not running' }}"

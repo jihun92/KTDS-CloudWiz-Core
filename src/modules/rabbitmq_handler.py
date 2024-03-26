@@ -67,7 +67,7 @@ class RabbitMQHandler:
             properties=properties
         )
 
-        self.logger.info(f"Send Message to {routing_key} !!!\nSend Message's Header : {properties.headers},\nHeader type: {type(properties.headers)}\nReceived Message's body : {body_str},\nbody type: {type(body_str)}")
+        self.logger.info(f"Send Message to {routing_key} !!!\nSend Message's Header : {properties.headers},\nReceived Message's body : {body_str}")
 
         
     def handle_message(self, header_dict, body_dict):

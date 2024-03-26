@@ -1,18 +1,27 @@
----
-- name: 설치 - Nginx 설치
+- name: Install, Start Nginx, and Check Process
   hosts: all
-  become: yes
+  become: true
   gather_facts: no
+
+  vars:
+    nginx_instance_name: "nginx"  # 엔진엑스 인스턴스명 변수
+
   tasks:
-    - name: Nginx 설치
+    - name: Install Nginx
       apt:
         name: nginx
         state: present
-      notify:
-        - nginx 시작
 
-  handlers:
-    - name: nginx 시작
+    - name: Start Nginx service
       service:
         name: nginx
         state: started
+
+    - name: Check Nginx process
+      shell: ps aux | grep {{ nginx_instance_name }} | grep -v grep
+      register: nginx_process
+      ignore_errors: true
+
+    - name: Print process status
+      debug:
+        msg: "Nginx process is {{ 'running' if nginx_process.stdout else 'not running' }}"
