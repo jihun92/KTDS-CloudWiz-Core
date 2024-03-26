@@ -5,6 +5,7 @@ import json
 import shutil
 import socket
 import uuid
+import pytz
 
 import ansible.constants as C
 from ansible.cli import CLI
@@ -234,7 +235,9 @@ class AnsibleHandler:
     
     def send_start_msg(self):
 
-        current_time_utc = datetime.utcnow()
+        korea_timezone = pytz.timezone('Asia/Seoul')
+        korea_time = datetime.now(korea_timezone)
+        current_time = korea_time.strftime('%Y-%m-%dT%H:%M:%SZ')
 
         header_dict = {}
         header_dict["message_id"] = str(uuid.uuid4())
@@ -248,7 +251,7 @@ class AnsibleHandler:
         body_dict = {}
         body_dict["parent_id"] = self.get_request_msg_header_message_id()
         body_dict["work_name"] = socket.gethostname()
-        body_dict["start_time"] = current_time_utc.strftime('%Y-%m-%dT%H:%M:%SZ')
+        body_dict["start_time"] = current_time
         
         self.rabbit_mq_handler.publish_message(
             routing_key=header_dict["res_queue"], 
@@ -259,7 +262,9 @@ class AnsibleHandler:
 
     def send_end_msg(self, summary):
 
-        current_time_utc = datetime.utcnow()
+        korea_timezone = pytz.timezone('Asia/Seoul')
+        korea_time = datetime.now(korea_timezone)
+        current_time = korea_time.strftime('%Y-%m-%dT%H:%M:%SZ')
 
         header_dict = {}
         header_dict["message_id"] = str(uuid.uuid4())
@@ -273,7 +278,7 @@ class AnsibleHandler:
         body_dict = {}
         body_dict["parent_id"] = self.get_request_msg_header_message_id()
         body_dict["work_name"] = socket.gethostname()
-        body_dict["end_time"] = current_time_utc.strftime('%Y-%m-%dT%H:%M:%SZ')
+        body_dict["end_time"] = current_time
         body_dict["summary"] = summary
 
         self.rabbit_mq_handler.publish_message(

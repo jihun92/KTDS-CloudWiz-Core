@@ -1,4 +1,5 @@
 from datetime import datetime
+import pytz
 import json
 import os
 import socket
@@ -26,20 +27,26 @@ class ResultsCollectorJSONCallback(CallbackBase):
     # Playbook이 시작될 때 호출됨    
     def v2_playbook_on_play_start(self, play):
         # self.logger.info("## [callback] v2_playbook_on_play_start")
-        current_time_utc = datetime.utcnow()
-        self.playbook_start_time = current_time_utc.strftime('%Y-%m-%dT%H:%M:%SZ')
+        korea_timezone = pytz.timezone('Asia/Seoul')
+        korea_time = datetime.now(korea_timezone)
+        current_time = korea_time.strftime('%Y-%m-%dT%H:%M:%SZ')
+        self.playbook_start_time = current_time
         self.playbook_end_time = None
 
     # Playbook의 끝나면 호출됨
     def v2_playbook_on_stats(self, stats):
         # self.logger.info("## [callback] v2_playbook_on_stats")
-        current_time_utc = datetime.utcnow()
-        self.playbook_end_time = current_time_utc.strftime('%Y-%m-%dT%H:%M:%SZ')
+        korea_timezone = pytz.timezone('Asia/Seoul')
+        korea_time = datetime.now(korea_timezone)
+        current_time = korea_time.strftime('%Y-%m-%dT%H:%M:%SZ')
+        self.playbook_end_time = current_time
 
     # Task가 시작될 때 호출됨    
     def v2_playbook_on_task_start(self, task, is_conditional):
-        current_time_utc = datetime.utcnow()
-        self.tastk_start_time = current_time_utc.strftime('%Y-%m-%dT%H:%M:%SZ')
+        korea_timezone = pytz.timezone('Asia/Seoul')
+        korea_time = datetime.now(korea_timezone)
+        current_time = korea_time.strftime('%Y-%m-%dT%H:%M:%SZ')
+        self.tastk_start_time = current_time
  
     # Task 수행 결과가 unreachable일 경우 호출
     def v2_runner_on_unreachable(self, result):
@@ -117,7 +124,9 @@ class ResultsCollectorJSONCallback(CallbackBase):
     # 응답 메시지 생성 및 전송
     def send_task_result_msg(self, result, result_code):
  
-        current_time_utc = datetime.utcnow()
+        korea_timezone = pytz.timezone('Asia/Seoul')
+        korea_time = datetime.now(korea_timezone)
+        current_time = korea_time.strftime('%Y-%m-%dT%H:%M:%SZ')
 
         host = result._host.name
         task_name = result._task.name
@@ -142,7 +151,7 @@ class ResultsCollectorJSONCallback(CallbackBase):
         body_dict["parent_id"] = self.ansible_handler.get_request_msg_header_message_id()
         body_dict["work_name"] = socket.gethostname()
         body_dict["start_time"] = self.tastk_start_time
-        body_dict["end_time"] = current_time_utc.strftime('%Y-%m-%dT%H:%M:%SZ')
+        body_dict["end_time"] = current_time
         body_dict['host'] = host
         body_dict['task_name'] = task_name
         body_dict['module_name'] = module_name
