@@ -241,7 +241,7 @@ class AnsibleHandler:
 
         header_dict = {}
         header_dict["message_id"] = str(uuid.uuid4())
-        header_dict["message_type"] = "EXEC_RESP"
+        header_dict["message_type"] = "ANSIBLE.EXEC_RES"
         header_dict["req_queue"] = self.get_request_msg_header_req_queue()
         header_dict["res_queue"] = self.get_request_msg_header_res_queue()
         header_dict["source_system"] = self.get_request_msg_header_source_system()
@@ -268,7 +268,7 @@ class AnsibleHandler:
 
         header_dict = {}
         header_dict["message_id"] = str(uuid.uuid4())
-        header_dict["message_type"] = "PLAYBOOK_RESULT"
+        header_dict["message_type"] = "ANSIBLE.PLAYBOOK_RESULT"
         header_dict["req_queue"] = self.get_request_msg_header_req_queue()
         header_dict["res_queue"] = self.get_request_msg_header_res_queue()
         header_dict["source_system"] = self.get_request_msg_header_source_system()

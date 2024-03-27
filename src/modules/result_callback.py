@@ -139,7 +139,7 @@ class ResultsCollectorJSONCallback(CallbackBase):
 
         header_dict = {}
         header_dict["message_id"] = str(uuid.uuid4())
-        header_dict["message_type"] = "TASK_RESULT"
+        header_dict["message_type"] = "ANSIBLE.TASK_RESULT"
         header_dict["req_queue"] = self.ansible_handler.get_request_msg_header_req_queue()
         header_dict["res_queue"] = self.ansible_handler.get_request_msg_header_res_queue()
         header_dict["source_system"] = self.ansible_handler.get_request_msg_header_source_system()
